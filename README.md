@@ -101,7 +101,7 @@ scripts\run-ac-by-step.bat
 
 #### A. Run All 7 Core Acceptance Criteria (AC1 to AC7) in Visible Chrome (Demo Mode):
 ```powershell
-mvn test "-Dcucumber.filter.tags=@E2E" "-Dheadless=false"
+mvn test -Dheadless=false"
 ```
 > **What you will see on screen:**
 > 1. Chrome opens maximized.
