@@ -101,7 +101,7 @@ scripts\run-ac-by-step.bat
 
 #### A. Run All 7 Core Acceptance Criteria (AC1 to AC7) in Visible Chrome (Demo Mode):
 ```powershell
-mvn test -Dheadless=false"
+mvn test "-Dcucumber.filter.tags=@E2E" "-Dheadless=false"
 ```
 > **What you will see on screen:**
 > 1. Chrome opens maximized.
@@ -172,36 +172,263 @@ mvn test "-Dbrowser=edge" "-Dheadless=false"
 
 ---
 
-## 4. Visualizing Reports (Allure & AI Summary)
+## 4. Visualizing Reports & AI Telemetry
 
-### 1. Interactive Allure HTML Dashboard
-Allure converts test telemetry into rich visual graphs, step timelines, and screenshot logs:
-
-```powershell
-# Launch live interactive dashboard in browser (Recommended):
-mvn allure:serve
-```
-*(To exit the live server, press `Ctrl + C` in your terminal)*
-
-Alternatively, compile the static website to disk:
-```powershell
-mvn allure:report
-# Or double-click:
-scripts\generate-allure-report.bat
-```
-*(Outputs to: `target/site/allure-maven-plugin/index.html`)*
+This framework incorporates two synchronized reporting layers:
+1. **Interactive Allure HTML Reporting Dashboard**: Enterprise-grade test execution telemetry, step-by-step Gherkin traces, timing metrics, and automatic failure screenshot attachments.
+2. **AI-Powered Test Quality & Defect Clustering Engine (`AIResultAnalyzer.java`)**: Autonomous post-test analytics engine that parses execution results, applies pattern heuristics to categorize defects by root cause, and generates an executive markdown summary without human intervention.
 
 ---
 
-### 2. AI Test Quality & Defect Clustering Report
-At the end of every run, `com.ulta.automation.utils.AIResultAnalyzer` automatically aggregates test data and generates an executive report:
+### 4.1 Allure Report Generation & Deep-Dive Guide
 
-- **Location:** [`test-artifacts/AI_TEST_REPORT_SUMMARY.md`](test-artifacts/AI_TEST_REPORT_SUMMARY.md)
-- **Includes:**
-  - Executive KPI table (Total: 17, Passed: 17, Failed: 0, Pass Rate: 100.0%)
-  - Recommendation relevance score telemetry (AC5: 83.33%, AC6: 83.33%, AC7: 94.44%)
-  - Defect clustering & Root Cause Analysis (RCA) breakdown
-  - Algorithmic risk evaluation and release readiness verdict
+#### A. How Allure Reporting Works in this Framework
+
+Allure reporting is orchestrated across three interconnected architectural components:
+
+```mermaid
+graph TD
+    subgraph Execution & Event Interception
+        TestRunner["TestRunner.java<br/>(io.cucumber.testng)"] --> BDDPlugin["AllureCucumber7Jvm Plugin<br/>(Captures Features, Scenarios, Steps)"]
+        TestNGXML["testng.xml Suite"] --> Listener["AllureTestListener.java<br/>(ITestListener Lifecycle Hooks)"]
+        BDDSteps["Hooks.java (@After / @AfterStep)"] --> Screenshot["Allure.addAttachment()<br/>(Dynamic PNG Screenshots on Failure)"]
+    end
+
+    subgraph Telemetry Serialization
+        BDDPlugin --> ResultsDir["target/allure-results/<br/>(Raw JSON & XML Test Telemetry)"]
+        Listener --> EnvProps["target/allure-results/environment.properties<br/>(App, Env, Browser, Java, OS metadata)"]
+        Screenshot --> ResultsDir
+    end
+
+    subgraph Report Compilation & Serving
+        ResultsDir --> AllureMaven["allure-maven plugin<br/>(mvn allure:report / mvn allure:serve)"]
+        AllureMaven --> HTMLReport["target/site/allure-maven-plugin/index.html<br/>(Static Dashboard SPA)"]
+        AllureMaven --> LiveServer["Embedded Jetty Web Server<br/>(http://localhost:port - Live Interactive Dashboard)"]
+    end
+```
+
+1. **Cucumber JVM Integration (`AllureCucumber7Jvm` in [`TestRunner.java`](src/test/java/com/ulta/automation/runners/TestRunner.java)):**
+   - Registered directly in `@CucumberOptions(plugin = {"io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"})`.
+   - Listens to all Cucumber scenario and step events in real time.
+   - Emits raw test execution event JSON files into `target/allure-results/`.
+2. **TestNG Environment Listener ([`AllureTestListener.java`](src/test/java/com/ulta/automation/listeners/AllureTestListener.java) via [`testng.xml`](testng.xml)):**
+   - Implements `ITestListener` to intercept suite start (`onStart()`).
+   - Dynamically writes runtime metadata to `target/allure-results/environment.properties`:
+     - **Application:** `Ulta Beauty`
+     - **Environment:** `mock` / `live` (from `ConfigReader.getEnv()`)
+     - **Base_URL:** Target URL (e.g., `http://localhost:8089` or `https://www.ulta.com/`)
+     - **Browser & Headless:** `chrome` / `edge`, `headless=false/true`
+     - **Java & OS Version:** Active JDK version (17/21/23) and host Operating System
+     - **Framework & AI Engine:** `Selenium 4 + Cucumber BDD + TestNG + Allure` & `GitHub Copilot Prompt-Engineered Automation`
+   - These properties populate the **Environment** widget on the Allure dashboard.
+3. **Automated Failure Screenshot Attachment ([`Hooks.java`](src/test/java/com/ulta/automation/stepdefinitions/Hooks.java)):**
+   - Intercepts failed steps (`@AfterStep`) and failed scenarios (`@After`).
+   - If `scenario.isFailed()` is true, captures a full-page screenshot via `((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES)`.
+   - Attaches the image directly to the Allure lifecycle using:
+     ```java
+     Allure.addAttachment(attachmentName, "image/png", new ByteArrayInputStream(screenshot), "png");
+     ```
+
+---
+
+#### B. Step-by-Step Commands to Generate Allure Reports
+
+##### Method 1: Interactive Live Dashboard Server (Recommended)
+This command compiles the raw JSON telemetry in `target/allure-results` and launches a local embedded web server that opens your default browser automatically:
+
+```powershell
+mvn allure:serve
+```
+
+> **Live Server Notes:**
+> - Launches an embedded Jetty web server on an available local port (e.g., `http://127.0.0.1:51234/`).
+> - Keep the terminal window open while inspecting the dashboard.
+> - To terminate the server, press `Ctrl + C` in your terminal and enter `Y`.
+
+##### Method 2: Compiling Static HTML Report to Disk
+If you need to archive reports as CI/CD build artifacts or save a static bundle:
+
+```powershell
+# Via Maven CLI:
+mvn allure:report
+
+# Or using the 1-click batch runner:
+scripts\generate-allure-report.bat
+
+# Or using PowerShell:
+.\scripts\generate-allure-report.ps1
+```
+- **Generated Report Directory:** `target/site/allure-maven-plugin/index.html`
+- **Important Browser CORS Notice:** Modern browsers (Chrome, Edge) block AJAX/Fetch requests for local `file://` URLs due to CORS security policies. If you open `index.html` directly from Windows Explorer, data widgets may show loading spinners. To inspect the static report locally, either use `mvn allure:serve` or serve the folder using a local HTTP server:
+  ```powershell
+  python -m http.server 8080 --directory target/site/allure-maven-plugin
+  # Then open http://localhost:8080 in Chrome
+  ```
+
+##### Method 3: Using System Allure CLI (Alternative)
+If you have the standalone Allure CLI installed on your machine (`allure --version`):
+```powershell
+# Serve directly from results folder:
+allure serve target/allure-results
+
+# Generate standalone static report into target/allure-report:
+allure generate target/allure-results --clean -o target/allure-report
+```
+
+---
+
+#### C. Key Dashboard Views & Features in Allure
+
+| Allure Tab / View | What It Displays | Specific Verification in this Project |
+|---|---|---|
+| **Overview** | Executive summary: Pass/Fail donut chart, total duration, test count (17 total), and environment properties | Confirms 100% pass rate (17/17) and runtime config (Mock vs Live) |
+| **Behaviors (BDD)** | Cucumber Features, Epics, Stories, and Tags (`@AC1` through `@AC7`, `@Negative`, `@Boundary`) | Maps scenarios directly to Ulta customer journey acceptance criteria |
+| **Suites** | Structural hierarchy grouped by feature files (`01_UltaEndToEndShopping.feature`, etc.) | Detailed execution tree with scenario status badges |
+| **Graphs & Timeline** | Execution duration distribution, test severity, and thread concurrency timeline | Shows execution timings and pacing across positive and negative tests |
+| **Packages / Steps** | Granular step-by-step Given/When/Then breakdown with millisecond-level precision | Inspects exact assertion steps, parameters, and attached failure screenshots |
+
+---
+
+### 4.2 AI Test Report Analyzer (`AIResultAnalyzer.java`) Architecture & Workflow
+
+#### A. What is the AI Result Analyzer?
+
+[`AIResultAnalyzer.java`](src/main/java/com/ulta/automation/utils/AIResultAnalyzer.java) is a custom-engineered post-execution analytics and root-cause clustering engine. Instead of requiring quality engineers to manually inspect hundreds of lines of terminal logs or triage errors across multiple feature files, the AI Result Analyzer:
+1. **Parses raw test execution artifacts** (`target/cucumber-reports/cucumber.json`).
+2. **Applies pattern-matching heuristics** to categorize failed stack traces into root causes (Defect Clustering).
+3. **Aggregates recommendation relevance telemetry** (AC5: 83.33%, AC6: 83.33%, AC7: 94.44%).
+4. **Calculates executive KPIs and pass rates** with ASCII visual progress bars.
+5. **Synthesizes an executive markdown summary** directly to [`test-artifacts/AI_TEST_REPORT_SUMMARY.md`](test-artifacts/AI_TEST_REPORT_SUMMARY.md).
+
+---
+
+#### B. End-to-End Pipeline & Execution Flow
+
+```mermaid
+flowchart TD
+    subgraph Test Execution Phase
+        Runner["TestRunner.java / Maven CLI"] --> Tests["17 Cucumber Scenarios Executed"]
+        Tests --> Steps["Step Definitions (DOM Extraction & Assertions)"]
+        Steps --> KRE["KeywordRelevanceEvaluator.java<br/>(AC5: 83.33%, AC6: 83.33%, AC7: 94.44%)"]
+        Tests --> JsonArtifact["target/cucumber-reports/cucumber.json"]
+    end
+
+    subgraph Automatic Lifecycle Trigger
+        Tests --> SuiteHook["Hooks.java @AfterAll Suite Hook"]
+        JsonArtifact --> SuiteHook
+    end
+
+    subgraph AI Analyzer Processing Engine
+        SuiteHook --> AnalyzeCall["AIResultAnalyzer.analyzeCucumberReport()"]
+        AnalyzeCall --> Jackson["Jackson Databind reads cucumber.json"]
+        Jackson --> ScenIter["Iterate Features -> Scenarios -> Steps"]
+        ScenIter --> CheckStatus{"Step Status == failed?"}
+        CheckStatus -- Yes --> ClusterFn["clusterDefect(stats, errorMessage)"]
+        ClusterFn --> Taxonomy["Regex Pattern Heuristics Categorization"]
+        CheckStatus -- No --> PassCount["Increment passedScenarios"]
+    end
+
+    subgraph Executive Report Synthesis
+        Taxonomy --> GenReport["AIResultAnalyzer.generateAIExecutiveReport()"]
+        PassCount --> GenReport
+        GenReport --> Markdown["test-artifacts/AI_TEST_REPORT_SUMMARY.md"]
+        GenReport --> LogOutput["Log4j2 Console & File Output"]
+    end
+```
+
+---
+
+#### C. Step-by-Step How It Works Under the Hood
+
+1. **Automatic Lifecycle Trigger ([`Hooks.java`](src/test/java/com/ulta/automation/stepdefinitions/Hooks.java)):**
+   At the end of the test suite, Cucumber's `@AfterAll` hook intercepts suite completion automatically—**no manual invocation needed**:
+   ```java
+   @AfterAll
+   public static void afterAllSuite() {
+       logger.info("Test execution completed. Triggering AI Result Analyzer...");
+       try {
+           // 1. Ingest Cucumber JSON artifact
+           AIResultAnalyzer.ExecutionStats stats = 
+               AIResultAnalyzer.analyzeCucumberReport("target/cucumber-reports/cucumber.json");
+           
+           if (stats.totalScenarios == 0 && totalScenariosCount > 0) {
+               stats.totalScenarios = totalScenariosCount;
+               stats.passedScenarios = passedScenariosCount;
+               stats.failedScenarios = failedScenariosCount;
+           }
+           
+           // 2. Synthesize Executive Quality & Defect Clustering Report
+           AIResultAnalyzer.generateAIExecutiveReport(stats, "test-artifacts/AI_TEST_REPORT_SUMMARY.md");
+       } catch (Exception e) {
+           logger.warn("Could not complete automatic AI result analysis post-suite: {}", e.getMessage());
+       }
+       if ("mock".equalsIgnoreCase(ConfigReader.getEnv())) {
+           LocalUltaMockServer.stopServer();
+       }
+   }
+   ```
+
+2. **Artifact Ingestion (`analyzeCucumberReport`):**
+   - Jackson's `ObjectMapper` parses `target/cucumber-reports/cucumber.json`.
+   - Iterates through all feature elements and scenario steps.
+   - For every failed step, extracts `result.error_message` and forwards it to `clusterDefect()`.
+
+3. **Defect Clustering & Root Cause Taxonomy (`clusterDefect`):**
+   The heuristic classifier scans the error message and maps it to a specific failure archetype:
+
+   ```java
+   private static void clusterDefect(ExecutionStats stats, String errorMessage) {
+       String clusterKey;
+       if (errorMessage.contains("NoSuchElementException") || errorMessage.contains("TimeoutException")) {
+           clusterKey = "UI Synchronization & Locator Drift";
+       } else if (errorMessage.contains("AssertionError") && errorMessage.contains("relevance")) {
+           clusterKey = "Recommendation Engine Relevance Degradation";
+       } else if (errorMessage.contains("403") || errorMessage.contains("Access Denied")) {
+           clusterKey = "Anti-Bot / WAF Challenge (Akamai/PerimeterX)";
+       } else if (errorMessage.contains("StaleElementReferenceException")) {
+           clusterKey = "DOM Mutation & Asynchronous Re-render";
+       } else {
+           clusterKey = "General Functional Logic / Regression";
+       }
+       stats.defectClusters.put(clusterKey, stats.defectClusters.getOrDefault(clusterKey, 0) + 1);
+   }
+   ```
+
+   **Heuristic Taxonomy Matrix:**
+
+   | Defect Cluster Archetype | Triggering Exceptions / Patterns | Underlying Root Cause | Recommended Remediation |
+   |---|---|---|---|
+   | **UI Synchronization & Locator Drift** | `NoSuchElementException`, `TimeoutException` | Element not yet in DOM, slow rendering, or selector mismatch | Adjust explicit wait timeouts, verify XPath/CSS against dynamic UI changes |
+   | **Recommendation Relevance Degradation** | `AssertionError` with `relevance` | ML model drift: recommendation tokens dropped below threshold | Retrain recommendation model or update domain keywords dictionary |
+   | **Anti-Bot / WAF Challenge** | `HTTP 403`, `Access Denied` | Cloudflare / Akamai bot protection blocked automated browser | Switch to `-Denv=mock` or configure undetected-chromedriver options |
+   | **DOM Mutation & Asynchronous Re-render** | `StaleElementReferenceException` | Element was detached and re-rendered during DOM updates | Implement auto-retry lookup wrappers in `ElementUtils.java` |
+   | **General Functional Logic / Regression** | Any other unhandled exception | Core business logic failure or broken backend integration | Triage stack trace and assign defect ticket in issue tracker |
+
+4. **Recommendation Relevance Telemetry Integration:**
+   The analyzer records and validates algorithmic recommendation scores against configured thresholds:
+   - **AC5 (PDP Moisturizer):** Target $\ge 30.0\%$ $\to$ **83.33% Observed** (PASSED)
+   - **AC6 (Cart Cross-Category):** Target $\ge 25.0\%$ $\to$ **83.33% Observed** (PASSED)
+   - **AC7 (End-to-End Consistency):** Target $\ge 20.0\%$ $\to$ **94.44% Observed** (PASSED)
+
+5. **Report Generation (`generateAIExecutiveReport`):**
+   Synthesizes the markdown report [`test-artifacts/AI_TEST_REPORT_SUMMARY.md`](test-artifacts/AI_TEST_REPORT_SUMMARY.md) with:
+   - Executive KPI table (Total: 17, Passed: 17, Failed: 0, Pass Rate: 100.0%)
+   - ASCII visual progress bars (`Passed: [#########################] 100.0%`)
+   - Full AC1–AC7 Acceptance Criteria verification matrix
+   - Defect clustering summary and remediation table
+   - Predictive risk assessment and Copilot GenAI contribution analysis.
+
+---
+
+#### D. Running the AI Analyzer Standalone (CLI or IDE)
+
+You can also run `AIResultAnalyzer` independently without re-running Selenium tests (e.g., to re-generate the executive summary from existing `cucumber.json` artifacts):
+
+```powershell
+# Run standalone via Maven:
+mvn compile exec:java -Dexec.mainClass="com.ulta.automation.utils.AIResultAnalyzer"
+```
+Or right-click and run the `main()` method of [`AIResultAnalyzer.java`](src/main/java/com/ulta/automation/utils/AIResultAnalyzer.java) in IntelliJ IDEA or Eclipse. Output is written immediately to `test-artifacts/AI_TEST_REPORT_SUMMARY.md`.
 
 ---
 
