@@ -1,0 +1,45 @@
+# ==============================================================================
+# Ulta AI-Powered Test Automation - Git Ignore
+# ==============================================================================
+
+# Maven Build Target & Classes
+target/
+*.class
+
+# Allure CLI Cache & Report Artifacts
+.allure/
+allure-results/
+allure-report/
+
+# Runtime Logs
+logs/*.log
+*.log
+!logs/.gitkeep
+
+# IDE & Editor Directories
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+.vscode/*
+!.vscode/settings.json
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Packaging & Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Local test configuration and credentials
+secrets.properties
+credentials.properties

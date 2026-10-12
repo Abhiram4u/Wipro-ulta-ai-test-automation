@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TruSkin Vitamin C Facial Serum with Hyaluronic Acid | Ulta Beauty</title>
+    <style>
+        :root { --ulta-orange: #ff5000; --border-color: #e0e0e0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        header { border-bottom: 1px solid var(--border-color); background: #fff; padding: 16px 24px; position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        .logo a { font-size: 26px; font-weight: 900; color: var(--ulta-orange); text-decoration: none; }
+        .search-wrapper { flex: 1; max-width: 600px; display: flex; position: relative; }
+        .search-wrapper input { width: 100%; padding: 12px 48px 12px 18px; border: 1px solid #999; border-radius: 24px; font-size: 14px; outline: none; }
+        .search-btn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: var(--ulta-orange); border: none; color: white; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
+        .cart-badge { background: var(--ulta-orange); color: white; border-radius: 50%; padding: 2px 7px; font-size: 12px; margin-left: 6px; }
+        
+        .pdp-container { max-width: 1200px; margin: 40px auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 50px; }
+        .pdp-image-box { background: #fafafa; border: 1px solid var(--border-color); border-radius: 12px; height: 420px; display: flex; align-items: center; justify-content: center; font-size: 96px; }
+        .pdp-info { display: flex; flex-direction: column; }
+        .pdp-brand { font-size: 14px; color: #888; text-transform: uppercase; font-weight: bold; }
+        .pdp-title { font-size: 28px; font-weight: 700; color: #222; margin: 8px 0 12px; line-height: 1.25; }
+        .pdp-price { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 20px; }
+        .pdp-options { margin-bottom: 24px; }
+        .pdp-options label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .pdp-options select { width: 220px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none; }
+        .btn-add-to-bag { background: var(--ulta-orange); color: white; font-size: 16px; font-weight: 700; padding: 16px 32px; border: none; border-radius: 30px; cursor: pointer; transition: background 0.2s; width: 100%; max-width: 320px; }
+        .btn-add-to-bag:hover { background: #e04600; }
+        .alert-added { display: none; margin-top: 16px; padding: 12px 18px; background: #e8f5e9; border: 1px solid #c8e6c9; color: #2e7d32; border-radius: 8px; font-weight: 500; }
+        
+        .recommendations-section { max-width: 1200px; margin: 60px auto 40px; padding: 0 24px; border-top: 1px solid var(--border-color); padding-top: 40px; }
+        .recs-title { font-size: 22px; font-weight: 700; color: #222; margin-bottom: 24px; }
+        .recs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .rec-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; background: #fff; display: flex; flex-direction: column; }
+        .rec-icon { font-size: 36px; text-align: center; margin-bottom: 10px; }
+        .rec-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; text-decoration: none; }
+        .rec-price { font-size: 14px; font-weight: 700; color: #222; margin-top: auto; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <div class="logo"><a href="/index.html">ULTA BEAUTY</a></div>
+            <form class="search-wrapper" action="/search.html" method="GET">
+                <input type="search" name="q" id="search-input" data-testid="search-input" placeholder="Search..." autocomplete="off">
+                <button type="submit" class="search-btn" id="search-button" data-testid="search-button">🔍</button>
+            </form>
+            <div>
+                <a href="/cart.html" style="text-decoration:none; color:#222; font-weight:500;" id="cart-icon" data-testid="cart-icon">
+                    🛍️ Bag <span class="cart-badge" id="cart-count-badge" data-testid="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="pdp-container">
+        <div class="pdp-image-box">🍊</div>
+        <div class="pdp-info">
+            <div class="pdp-brand" data-testid="pdp-brand">TruSkin</div>
+            <h1 class="pdp-title" id="pdp-product-title" data-testid="pdp-product-title">TruSkin Vitamin C Facial Serum with Hyaluronic Acid</h1>
+            <div class="pdp-price" id="pdp-price" data-testid="pdp-price">$21.99</div>
+
+            <div class="pdp-options">
+                <label for="size-selector">Select Volume:</label>
+                <select id="size-selector" data-testid="size-selector">
+                    <option value="1oz">1.0 fl oz / 30 ml</option>
+                    <option value="2oz">2.0 fl oz / 60 ml</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn-add-to-bag" id="add-to-bag-button" data-testid="add-to-bag-button" onclick="addToCart()">Add to Bag</button>
+            <div class="alert-added" id="added-alert" data-testid="added-alert">Item successfully added to your bag!</div>
+        </div>
+    </div>
+
+    <section class="recommendations-section" id="recommendations-section" data-testid="recommendations-section">
+        <h2 class="recs-title" id="recommendations-heading">You may also like</h2>
+        <div class="recs-grid" id="recommendations-carousel" data-testid="recommendations-carousel">
+            <div class="rec-card" data-testid="recommendation-card">
+                <div class="rec-icon">✨</div>
+                <a href="#" class="rec-title" data-testid="recommendation-title">La Roche-Posay Pure Vitamin C10 Serum Antioxidant Face Elixir</a>
+                <div class="rec-price">$44.99</div>
+            </div>
+            <div class="rec-card" data-testid="recommendation-card">
+                <div class="rec-icon">🌟</div>
+                <a href="#" class="rec-title" data-testid="recommendation-title">Sunday Riley C.E.O. 15% Vitamin C Brightening Serum for Glowing Skin</a>
+                <div class="rec-price">$85.00</div>
+            </div>
+            <div class="rec-card" data-testid="recommendation-card">
+                <div class="rec-icon">🍊</div>
+                <a href="#" class="rec-title" data-testid="recommendation-title">Mad Hippie Vitamin C Serum with Hyaluronic Acid for Radiant Skin</a>
+                <div class="rec-price">$33.99</div>
+            </div>
+            <div class="rec-card" data-testid="recommendation-card">
+                <div class="rec-icon">🍉</div>
+                <a href="#" class="rec-title" data-testid="recommendation-title">Glow Recipe Watermelon Glow Niacinamide Dew Drops Facial Serum</a>
+                <div class="rec-price">$35.00</div>
+            </div>
+            <div class="rec-card" data-testid="recommendation-card">
+                <div class="rec-icon">🌸</div>
+                <a href="#" class="rec-title" data-testid="recommendation-title">Mario Badescu Facial Spray with Aloe, Herbs and Rosewater</a>
+                <div class="rec-price">$12.00</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function addToCart() {
+            const product = {
+                id: "vc1",
+                brand: "TruSkin",
+                title: "TruSkin Vitamin C Facial Serum with Hyaluronic Acid",
+                price: "$21.99",
+                size: document.getElementById('size-selector').value
+            };
+            let cart = JSON.parse(localStorage.getItem('ulta_cart') || '[]');
+            cart.push(product);
+            localStorage.setItem('ulta_cart', JSON.stringify(cart));
+            document.getElementById('cart-count-badge').innerText = cart.length;
+            const alert = document.getElementById('added-alert');
+            alert.style.display = 'block';
+            setTimeout(() => { alert.style.display = 'none'; }, 2500);
+        }
+
+        function syncCart() {
+            const cart = JSON.parse(localStorage.getItem('ulta_cart') || '[]');
+            const badge = document.getElementById('cart-count-badge');
+            if (badge) badge.innerText = cart.length;
+        }
+        syncCart();
+    </script>
+</body>
+</html>

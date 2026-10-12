@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Bag | Ulta Beauty</title>
+    <style>
+        :root { --ulta-orange: #ff5000; --border-color: #e0e0e0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        header { border-bottom: 1px solid var(--border-color); background: #fff; padding: 16px 24px; position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        .logo a { font-size: 26px; font-weight: 900; color: var(--ulta-orange); text-decoration: none; }
+        .search-wrapper { flex: 1; max-width: 600px; display: flex; position: relative; }
+        .search-wrapper input { width: 100%; padding: 12px 48px 12px 18px; border: 1px solid #999; border-radius: 24px; font-size: 14px; outline: none; }
+        .search-btn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: var(--ulta-orange); border: none; color: white; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
+        .cart-badge { background: var(--ulta-orange); color: white; border-radius: 50%; padding: 2px 7px; font-size: 12px; margin-left: 6px; }
+
+        .cart-container { max-width: 1200px; margin: 40px auto; padding: 0 24px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        .cart-title { font-size: 28px; font-weight: 700; color: #222; margin-bottom: 24px; }
+        .cart-items-list { display: flex; flex-direction: column; gap: 20px; }
+        .cart-item { border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; display: flex; gap: 20px; align-items: center; background: #fff; }
+        .cart-item-icon { font-size: 40px; width: 70px; height: 70px; background: #fafafa; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .cart-item-details { flex: 1; }
+        .cart-item-brand { font-size: 12px; color: #777; text-transform: uppercase; font-weight: bold; }
+        .cart-item-title { font-size: 16px; font-weight: 600; color: #222; margin: 4px 0; }
+        .cart-item-qty { font-size: 13px; color: #555; }
+        .cart-item-price { font-size: 16px; font-weight: 700; color: #111; }
+        .cart-item-remove { background: none; border: none; color: #999; cursor: pointer; font-size: 13px; text-decoration: underline; margin-top: 6px; }
+
+        .order-summary { border: 1px solid var(--border-color); border-radius: 10px; padding: 24px; background: #fafafa; height: fit-content; }
+        .summary-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; color: #444; }
+        .summary-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: #111; border-top: 1px solid #ccc; padding-top: 16px; margin-top: 16px; }
+        .btn-checkout { width: 100%; background: var(--ulta-orange); color: white; padding: 14px; border: none; border-radius: 24px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+
+        /* Cart Page Recommendations (AC6) */
+        .cart-recommendations-section { max-width: 1200px; margin: 60px auto 40px; padding: 0 24px; border-top: 1px solid var(--border-color); padding-top: 40px; }
+        .recs-heading { font-size: 22px; font-weight: 700; color: #222; margin-bottom: 24px; }
+        .recs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .cart-rec-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; background: #fff; display: flex; flex-direction: column; }
+        .cart-rec-icon { font-size: 36px; text-align: center; margin-bottom: 10px; }
+        .cart-rec-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; text-decoration: none; }
+        .cart-rec-price { font-size: 14px; font-weight: 700; color: #222; margin-top: auto; }
+        .empty-cart-msg { padding: 40px 0; text-align: center; color: #666; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <div class="logo"><a href="/index.html">ULTA BEAUTY</a></div>
+            <form class="search-wrapper" action="/search.html" method="GET">
+                <input type="search" name="q" id="search-input" data-testid="search-input" placeholder="Search..." autocomplete="off">
+                <button type="submit" class="search-btn" id="search-button" data-testid="search-button">🔍</button>
+            </form>
+            <div>
+                <a href="/cart.html" style="text-decoration:none; color:#222; font-weight:500;" id="cart-icon" data-testid="cart-icon">
+                    🛍️ Bag <span class="cart-badge" id="cart-count-badge" data-testid="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="cart-container">
+        <div>
+            <h1 class="cart-title">Your Shopping Bag (<span id="cart-total-count" data-testid="cart-total-count">0</span> items)</h1>
+            <div class="cart-items-list" id="cart-items-container" data-testid="cart-items-container">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+
+        <div class="order-summary">
+            <h2 class="summary-title">Order Summary</h2>
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span id="summary-subtotal">$0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Estimated Shipping:</span>
+                <span>FREE</span>
+            </div>
+            <div class="summary-row">
+                <span>Estimated Tax:</span>
+                <span id="summary-tax">$0.00</span>
+            </div>
+            <div class="summary-total">
+                <span>Estimated Total:</span>
+                <span id="summary-total">$0.00</span>
+            </div>
+            <button class="btn-checkout" id="btn-checkout" data-testid="btn-checkout">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Recommendations Section (AC6) -->
+    <section class="cart-recommendations-section" id="cart-recommendations-section" data-testid="cart-recommendations-section">
+        <h2 class="recs-heading" id="cart-recommendations-heading">Recommended For Your Bag</h2>
+        <div class="recs-grid" id="cart-recommendations-carousel" data-testid="cart-recommendations-carousel">
+            <div class="cart-rec-card" data-testid="cart-recommendation-card">
+                <div class="cart-rec-icon">🧴</div>
+                <a href="#" class="cart-rec-title" data-testid="cart-recommendation-title">CeraVe Hydrating Facial Cleanser for Normal to Dry Skin</a>
+                <div class="cart-rec-price">$16.49</div>
+            </div>
+            <div class="cart-rec-card" data-testid="cart-recommendation-card">
+                <div class="cart-rec-icon">👁️</div>
+                <a href="#" class="cart-rec-title" data-testid="cart-recommendation-title">Maybelline Colossal Waterproof Mascara for Bold Eye Lashes</a>
+                <div class="cart-rec-price">$11.49</div>
+            </div>
+            <div class="cart-rec-card" data-testid="cart-recommendation-card">
+                <div class="cart-rec-icon">✨</div>
+                <a href="#" class="cart-rec-title" data-testid="cart-recommendation-title">Anastasia Beverly Hills Clear Brow Gel for Eyebrows</a>
+                <div class="cart-rec-price">$22.00</div>
+            </div>
+            <div class="cart-rec-card" data-testid="cart-recommendation-card">
+                <div class="cart-rec-icon">👁️</div>
+                <a href="#" class="cart-rec-title" data-testid="cart-recommendation-title">Tarte Lights, Camera, Lashes 4-in-1 Volumizing Mascara</a>
+                <div class="cart-rec-price">$27.00</div>
+            </div>
+            <div class="cart-rec-card" data-testid="cart-recommendation-card">
+                <div class="cart-rec-icon">🧴</div>
+                <a href="#" class="cart-rec-title" data-testid="cart-recommendation-title">Clinique Moisture Surge Overnight Mask Facial Hydrating Cream</a>
+                <div class="cart-rec-price">$41.00</div>
+            </div>
+            <div class="cart-rec-card" data-testid="cart-recommendation-card">
+                <div class="cart-rec-icon">💄</div>
+                <a href="#" class="cart-rec-title" data-testid="cart-recommendation-title">e.l.f. Power Grip Primer with Niacinamide Skin Base</a>
+                <div class="cart-rec-price">$10.00</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function loadCart() {
+            let cart = JSON.parse(localStorage.getItem('ulta_cart') || '[]');
+            // If empty, auto-populate the 3 test products for standalone testing
+            if (cart.length === 0) {
+                cart = [
+                    { id: "m1", brand: "CeraVe", title: "CeraVe Daily Moisturizing Lotion for Dry Skin", price: "$17.99" },
+                    { id: "mas1", brand: "Maybelline", title: "Maybelline Lash Sensational Sky High Waterproof Mascara", price: "$12.99" },
+                    { id: "vc1", brand: "TruSkin", title: "TruSkin Vitamin C Facial Serum with Hyaluronic Acid", price: "$21.99" }
+                ];
+                localStorage.setItem('ulta_cart', JSON.stringify(cart));
+            }
+
+            document.getElementById('cart-total-count').innerText = cart.length;
+            document.getElementById('cart-count-badge').innerText = cart.length;
+
+            const container = document.getElementById('cart-items-container');
+            let subtotal = 0;
+
+            container.innerHTML = cart.map((item, index) => {
+                const numericPrice = parseFloat(item.price.replace('$', '')) || 15.00;
+                subtotal += numericPrice;
+                return `
+                    <div class="cart-item" data-testid="cart-item" id="cart-item-${index}">
+                        <div class="cart-item-icon">🛍️</div>
+                        <div class="cart-item-details">
+                            <div class="cart-item-brand">${item.brand || 'Ulta'}</div>
+                            <div class="cart-item-title" data-testid="cart-item-title" id="cart-item-title-${index}">${item.title}</div>
+                            <div class="cart-item-qty">Qty: 1</div>
+                            <button class="cart-item-remove" onclick="removeItem(${index})">Remove</button>
+                        </div>
+                        <div class="cart-item-price">${item.price}</div>
+                    </div>
+                `;
+            }).join('');
+
+            const tax = subtotal * 0.0825;
+            const total = subtotal + tax;
+
+            document.getElementById('summary-subtotal').innerText = '$' + subtotal.toFixed(2);
+            document.getElementById('summary-tax').innerText = '$' + tax.toFixed(2);
+            document.getElementById('summary-total').innerText = '$' + total.toFixed(2);
+        }
+
+        function removeItem(index) {
+            let cart = JSON.parse(localStorage.getItem('ulta_cart') || '[]');
+            cart.splice(index, 1);
+            localStorage.setItem('ulta_cart', JSON.stringify(cart));
+            loadCart();
+        }
+
+        window.onload = loadCart;
+    </script>
+</body>
+</html>

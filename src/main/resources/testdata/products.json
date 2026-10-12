@@ -1,0 +1,41 @@
+{
+  "testProducts": [
+    {
+      "category": "moisturizer",
+      "searchQuery": "moisturizer",
+      "expectedTitle": "CeraVe Daily Moisturizing Lotion for Dry Skin",
+      "brand": "CeraVe",
+      "price": "$17.99",
+      "keywords": ["hydrat", "moisture", "cream", "lotion", "skin", "face", "serum"],
+      "expectedMinPdpRelevance": 30.0
+    },
+    {
+      "category": "mascara",
+      "searchQuery": "mascara",
+      "expectedTitle": "Maybelline Lash Sensational Sky High Waterproof Mascara",
+      "brand": "Maybelline",
+      "price": "$12.99",
+      "keywords": ["lash", "volume", "mascara", "eye", "lengthening", "waterproof"],
+      "expectedMinPdpRelevance": 30.0
+    },
+    {
+      "category": "vitamin c serum",
+      "searchQuery": "vitamin c serum",
+      "expectedTitle": "TruSkin Vitamin C Facial Serum with Hyaluronic Acid",
+      "brand": "TruSkin",
+      "price": "$21.99",
+      "keywords": ["vitamin c", "serum", "brightening", "antioxidant", "radiant", "skin", "face"],
+      "expectedMinPdpRelevance": 30.0
+    }
+  ],
+  "relevanceRules": {
+    "ac5_pdp_threshold": 30.0,
+    "ac6_cart_threshold": 25.0,
+    "ac7_e2e_threshold": 20.0,
+    "global_beauty_keywords": [
+      "skin", "face", "cream", "serum", "eye", "lip", "makeup", "beauty",
+      "hydrat", "glow", "lash", "moisture", "lotion", "cleanse", "toner",
+      "brighten", "acid", "mascara", "oil", "spf"
+    ]
+  }
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ulta Beauty | Makeup, Skin Care, Fragrance, Hair Care & Beauty Products</title>
+    <style>
+        :root {
+            --ulta-orange: #ff5000;
+            --ulta-dark: #222222;
+            --ulta-gray: #f7f7f7;
+            --border-color: #e0e0e0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        body { background: #fff; color: #333; }
+        header { border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: #fff; z-index: 100; }
+        .top-banner { background: #ffeae0; color: #b33900; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; }
+        .nav-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; gap: 20px; }
+        .logo a { font-size: 26px; font-weight: 900; color: var(--ulta-orange); text-decoration: none; letter-spacing: 2px; }
+        .search-wrapper { flex: 1; max-width: 600px; display: flex; position: relative; }
+        .search-wrapper input[type="search"] {
+            width: 100%; padding: 12px 48px 12px 18px; border: 1px solid #999; border-radius: 24px; font-size: 14px; outline: none; transition: border-color 0.2s;
+        }
+        .search-wrapper input[type="search"]:focus { border-color: var(--ulta-orange); box-shadow: 0 0 0 2px rgba(255,80,0,0.15); }
+        .search-btn {
+            position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: var(--ulta-orange); border: none; color: white; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .nav-actions { display: flex; align-items: center; gap: 24px; }
+        .nav-icon { display: flex; align-items: center; gap: 6px; text-decoration: none; color: #333; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .cart-icon-wrapper { position: relative; }
+        .cart-badge {
+            position: absolute; top: -8px; right: -10px; background: var(--ulta-orange); color: white; font-size: 11px; font-weight: bold; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+        }
+        .hero { background: linear-gradient(135deg, #fff2eb 0%, #ffe0d1 100%); padding: 60px 24px; text-align: center; }
+        .hero h1 { font-size: 38px; color: #222; margin-bottom: 12px; }
+        .hero p { font-size: 16px; color: #666; max-width: 600px; margin: 0 auto; }
+        .featured-categories { max-width: 1280px; margin: 40px auto; padding: 0 24px; }
+        .featured-categories h2 { font-size: 24px; margin-bottom: 20px; text-align: center; }
+        .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .cat-card { background: var(--ulta-gray); border-radius: 12px; padding: 24px; text-align: center; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        .cat-card:hover { transform: translateY(-4px); background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <div class="top-banner">Free Standard Shipping on any $35 purchase | Earn Points on Every Order</div>
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/index.html" data-testid="ulta-logo">ULTA BEAUTY</a>
+            </div>
+            <form class="search-wrapper" action="/search.html" method="GET" id="searchForm">
+                <input type="search" name="q" id="search-input" data-testid="search-input" placeholder="Search products, brands, trends..." autocomplete="off">
+                <button type="submit" class="search-btn" id="search-button" data-testid="search-button" aria-label="Search">🔍</button>
+            </form>
+            <div class="nav-actions">
+                <a href="#signin" class="nav-icon" id="account-icon" data-testid="account-icon">
+                    <span>👤</span>
+                    <span>Sign In / Register</span>
+                </a>
+                <a href="/cart.html" class="nav-icon cart-icon-wrapper" id="cart-icon" data-testid="cart-icon">
+                    <span>🛍️</span>
+                    <span>Bag</span>
+                    <span class="cart-badge" id="cart-count-badge" data-testid="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>All Things Beauty, All in One Place</h1>
+        <p>Discover luxury skincare, trendsetting makeup, hair care essentials, and personalised beauty recommendations.</p>
+    </section>
+
+    <section class="featured-categories">
+        <h2>Popular Beauty Searches</h2>
+        <div class="cat-grid">
+            <div class="cat-card" onclick="window.location.href='/search.html?q=moisturizer'">Hydrating Moisturizers</div>
+            <div class="cat-card" onclick="window.location.href='/search.html?q=mascara'">Volumizing Mascaras</div>
+            <div class="cat-card" onclick="window.location.href='/search.html?q=vitamin+c+serum'">Vitamin C Serums</div>
+            <div class="cat-card" onclick="window.location.href='/cart.html'">View Shopping Bag</div>
+        </div>
+    </section>
+
+    <script>
+        // Update cart badge from session storage or cookie
+        function syncCart() {
+            const cart = JSON.parse(localStorage.getItem('ulta_cart') || '[]');
+            const badge = document.getElementById('cart-count-badge');
+            if (badge) {
+                badge.innerText = cart.length;
+            }
+        }
+        window.onload = syncCart;
+    </script>
+</body>
+</html>
